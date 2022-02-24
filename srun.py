@@ -5,7 +5,7 @@ if bytes is str: input = raw_input
 
 try:
     import requests
-    
+
     def get_func(url, *args, **kwargs):
         resp = requests.get(url, *args, **kwargs)
         return resp.text
@@ -13,7 +13,7 @@ try:
     def post_func(url, data, *args, **kwargs):
         resp = requests.post(url, data=data, *args, **kwargs)
         return resp.text
-    
+
 except ImportError:
     import urllib.request
 
@@ -60,14 +60,15 @@ def humanable_bytes2(num_byte):
 
 
 class SrunClient:
-    
+
     name = 'CUGB'
-    srun_ip = '202.204.105.195'
+    srun_ip = '124.16.81.61'
 
     login_url = 'http://{}/cgi-bin/srun_portal'.format(srun_ip)
+    #login_url = 'http://{}/srun_portal_pc'.format(srun_ip)
     online_url = 'http://{}/cgi-bin/rad_user_info'.format(srun_ip)
     # headers = {'User-Agent': 'SrunClient {}'.format(name)}
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.56'}
 
     def __init__(self, username=None, passwd=None, print_log=True):
         self.username = username
@@ -75,7 +76,7 @@ class SrunClient:
         self.print_log = print_log
         self.online_info = dict()
         self.check_online()
-    
+
     def _encrypt(self, passwd):
         column_key = [0,0,'d','c','j','i','h','g']
         row_key = [
@@ -99,7 +100,7 @@ class SrunClient:
             else:
                 encrypt_passwd += char_r + char_c
         return encrypt_passwd
-    
+
     def _log(self, msg):
         if self.print_log:
             print('[SrunClient {}] {}'.format(self.name, msg))
@@ -112,10 +113,10 @@ class SrunClient:
         try:
             items = resp_text.split(',')
             self.online_info = {
-                'online':True, 'username':items[0], 
-                'login_time':items[1], 'now_time':items[2], 
-                'used_bytes':items[6], 'used_second':items[7], 
-                'ip':items[8], 'balance':items[11], 
+                'online':True, 'username':items[0],
+                'login_time':items[1], 'now_time':items[2],
+                'used_bytes':items[6], 'used_second':items[7],
+                'ip':items[8], 'balance':items[11],
                 'auth_server_version':items[21]
                 }
             return True
@@ -123,7 +124,7 @@ class SrunClient:
             print(resp_text)
             print('Catch `Status Internal Server Error`? The request is frequent!')
             print(e)
-    
+
     def show_online(self):
         if not self.check_online(): return
         self._log('###*** ONLINE INFORMATION! ***###')
