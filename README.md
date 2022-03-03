@@ -10,18 +10,11 @@
         If you want to retype info, delete setting file(setting.ini) you created before.
         username: test （输入帐号）
         passwd: ***（输入密码）
-        ```
-    - 运行srun.py脚本
-        会生成setting.ini,并自动登录服务器，以后只需要```python heartbeat.py```就可以认证服务器
-        ```shell
-        [user@host SrunClient]$ python heartbeat.py
-        There is not setting file, please enter info below
-        If you want to retype info, delete setting file(setting.ini) you created before.
-        username: test （输入帐号）
-        passwd: ***（输入密码）
         srun_ip(authentation server ip): 124.16.1.1 （输入学校认证的网关ip）
         ```
-2. 使用命令行客户端登录登出（务必先运行第一步）
+        会生成setting.ini,并自动登录服务器，以后只需要```python heartbeat.py```就可以认证服务器
+
+2. 使用命令行客户端登录登出（务必先运行第一步，配置ip）
     运行srun.py
     ```
     [user@host SrunClient]$ python srun.py
