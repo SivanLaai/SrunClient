@@ -15,7 +15,7 @@
         会生成setting.ini,并自动登录服务器，以后只需要```python heartbeat.py```就可以认证服务器
 
 2. 使用命令行客户端登录登出（务必先运行第一步，配置ip）
-    运行srun.py
+    - 运行srun.py
     ```
     [user@host SrunClient]$ python srun.py
     ############### Wellcome to Srun Client ###############
