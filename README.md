@@ -1,6 +1,9 @@
 # SrunClient
 简易版深澜命令行客户端，包含登录登出和查询在线信息功能。支持 windows/Linux/?MacOS，python2/3 。 包含校园内网服务器反向代理教程。
-
+# 修改内容（相对于原版）：
+1. 帐号、密码和ip保存于配置当中
+2. 密码在配置中做了加密处理，防止密码泄露
+3. 把HearBeat抽象成类来管理，更加方便维护
 # how to use
 1. 生成setting.ini，不用在手动输入密码
     - 运行hearbeat.py脚本
