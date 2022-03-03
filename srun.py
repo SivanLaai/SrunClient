@@ -1,5 +1,8 @@
 import time
 import getpass
+import configparser
+import base64
+import os
 
 if bytes is str: input = raw_input
 
@@ -61,18 +64,25 @@ def humanable_bytes2(num_byte):
 
 class SrunClient:
 
-    name = 'CUGB'
-    srun_ip = '124.16.81.61'
+    name = 'UCAS'
+    srun_ip = ''
 
-    login_url = 'http://{}/cgi-bin/srun_portal'.format(srun_ip)
-    #login_url = 'http://{}/srun_portal_pc'.format(srun_ip)
-    online_url = 'http://{}/cgi-bin/rad_user_info'.format(srun_ip)
-    # headers = {'User-Agent': 'SrunClient {}'.format(name)}
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.56'}
 
     def __init__(self, username=None, passwd=None, print_log=True):
-        self.username = username
-        self.passwd = passwd
+        setting_path = "setting.ini"
+        self.username = ""
+        self.passwd = ""
+        if os.path.exists(setting_path):
+            config = configparser.ConfigParser()
+            config.read(setting_path)
+            self.username = config['DEFAULT']['username']
+            self.passwd = str(base64.b64decode(config['DEFAULT']['passwd']), 'utf-8')
+            self.srun_ip = config['DEFAULT']['srun_ip']
+        self.login_url = 'http://{}/cgi-bin/srun_portal'.format(self.srun_ip)
+        #login_url = 'http://{}/srun_portal_pc'.format(srun_ip)
+        self.online_url = 'http://{}/cgi-bin/rad_user_info'.format(self.srun_ip)
+        # headers = {'User-Agent': 'SrunClient {}'.format(name)}
+        self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.56'}
         self.print_log = print_log
         self.online_info = dict()
         self.check_online()

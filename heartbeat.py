@@ -29,8 +29,11 @@ class HeartBeat:
         print('If you want to retype info, delete setting file(setting.ini) you created before.')
         self.USERNAME = input('username: ')
         self.PASSWD = getpass.getpass('passwd: ')
+        self.SRUN_IP = input('srun_ip(authentation server ip): ')
         config['DEFAULT'] = {'username': self.USERNAME,
-                            'passwd': str(base64.b64encode(self.PASSWD.encode('utf-8')), 'utf-8')}
+                            'passwd': str(base64.b64encode(self.PASSWD.encode('utf-8')), 'utf-8'),
+                            'srun_ip': self.SRUN_IP,
+                            }
         with open('setting.ini', 'w') as configfile:
             config.write(configfile)
 
