@@ -65,13 +65,12 @@ def humanable_bytes2(num_byte):
 class SrunClient:
 
     name = 'UCAS'
-    srun_ip = ''
-
 
     def __init__(self, username=None, passwd=None, print_log=True):
         setting_path = "setting.ini"
         self.username = ""
         self.passwd = ""
+        self.srun_ip = ""
         if os.path.exists(setting_path):
             config = configparser.ConfigParser()
             config.read(setting_path)
@@ -85,7 +84,7 @@ class SrunClient:
         self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.56'}
         self.print_log = print_log
         self.online_info = dict()
-        self.check_online()
+        #self.check_online()
 
     def _encrypt(self, passwd):
         column_key = [0,0,'d','c','j','i','h','g']
@@ -115,7 +114,65 @@ class SrunClient:
         if self.print_log:
             print('[SrunClient {}] {}'.format(self.name, msg))
 
+    def check_config(self):
+        if os.path.exists("setting.ini"):
+            return True
+        return False
+    '''
+    type : 2 - set username and passwd
+           5 - set srun_ip
+    '''
+    def generate_config(self, type='2'):
+        config = self.read_config()
+        if not self.check_config():
+            print('There is not setting file, please enter info below')
+            print('If you want to retype info, delete setting file(setting.ini) you created before.')
+            self.username = input('username: ')
+            self.passwd = getpass.getpass('passwd: ')
+            self.srun_ip = input('srun_ip(authentation server ip): ')
+        elif type == '2':
+            self.username = input('username: ')
+            self.passwd = getpass.getpass('passwd: ')
+        elif type == '5':
+            self.srun_ip = input('srun_ip(authentation server ip): ')
+        self.login_url = 'http://{}/cgi-bin/srun_portal'.format(self.srun_ip)
+        self.online_url = 'http://{}/cgi-bin/rad_user_info'.format(self.srun_ip)
+        config['DEFAULT'] = {'username': self.username,
+                            'passwd': str(base64.b64encode(self.passwd.encode('utf-8')), 'utf-8'),
+                            'srun_ip': self.srun_ip,
+                            }
+        with open('setting.ini', 'w') as configfile:
+            config.write(configfile)
+
+    def read_config(self):
+        config = configparser.ConfigParser()
+        if not self.check_config():
+            return config
+        config.read('setting.ini')
+        if 'username' in config['DEFAULT']:
+            self.username = config['DEFAULT']['username']
+        if 'passwd' in config['DEFAULT']:
+            self.passwd = str(base64.b64decode(config['DEFAULT']['passwd']), 'utf-8')
+        if 'srun_ip' in config['DEFAULT']:
+            self.srun_ip = config['DEFAULT']['srun_ip']
+        return config
+
+    def check_config(self):
+        if os.path.exists("setting.ini"):
+            return True
+        return False
+
+    def check_online_url(self):
+        config = self.read_config()
+        if not self.check_config():
+            self.generate_config()
+        if 'srun_ip' not in config['DEFAULT']:
+            self.srun_ip = input('srun_ip(authentation server ip): ')
+            self.login_url = 'http://{}/cgi-bin/srun_portal'.format(self.srun_ip)
+            self.online_url = 'http://{}/cgi-bin/rad_user_info'.format(self.srun_ip)
+
     def check_online(self):
+        self.check_online_url()
         resp_text = get_func(self.online_url, headers=self.headers)
         if 'not_online' in resp_text:
             self._log('###*** NOT ONLINE! ***###')
@@ -149,6 +206,8 @@ class SrunClient:
         print('=' * len(header))
 
     def login(self):
+        if not self.check_config():
+            self.generate_config()
         if self.check_online():
             self._log('###*** ALREADY ONLINE! ***###')
             return True
@@ -203,36 +262,42 @@ class SrunClient:
             return False
 
 
-def show_commands():
-    wellcome = '############### Wellcome to Srun Client ###############'
-    print(wellcome)
-    print('[1]: show online information')
-    print('[2]: set username and passwd')
-    print('[3]: login')
-    print('[4]: logout')
-    print('[h]: show this messages')
-    print('[q]: quit')
-    print('#' * len(wellcome))
+    def show_commands(self):
+        wellcome = '############### Wellcome to Srun Client ###############'
+        print(wellcome)
+        print('Username: {}'.format(self.username))
+        print('Ip: {}'.format(self.srun_ip))
+        print('[1]: show online information')
+        print('[2]: set username and passwd')
+        print('[3]: login')
+        print('[4]: logout')
+        print('[5]: set srun_ip')
+        print('[h]: show this messages')
+        print('[q]: quit')
+        print('#' * len(wellcome))
 
 
 if __name__ == "__main__":
     srun_client = SrunClient()
-    show_commands()
-    srun_client.show_online()
+    srun_client.show_commands()
+    #srun_client.show_online()
     command = '_'
     while command != 'q':
         command = input('>')
         if command == '1':
             srun_client.show_online()
         elif command == '2':
-            srun_client.username = input('username: ')
-            srun_client.passwd = getpass.getpass('passwd: ')
+            #srun_client.username = input('username: ')
+            #srun_client.passwd = getpass.getpass('passwd: ')
+            srun_client.generate_config(command)
         elif command == '3':
             srun_client.login()
         elif command == '4':
             srun_client.logout()
+        elif command == '5':
+            srun_client.generate_config(command)
         elif command == 'h':
-            show_commands()
+            srun_client.show_commands()
         elif command == 'q':
             print('bye!')
         else:
