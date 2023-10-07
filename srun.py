@@ -173,7 +173,6 @@ class SrunClient:
 
     def check_online(self):
         resp_text = get_func(self.online_url, headers=self.headers)
-        self._log(f'{self.online_url}')
         if 'not_online' in resp_text:
             self._log('###*** NOT ONLINE! ***###')
             return False
