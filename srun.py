@@ -172,8 +172,8 @@ class SrunClient:
             self.online_url = 'http://{}/cgi-bin/rad_user_info'.format(self.srun_ip)
 
     def check_online(self):
-        self.check_online_url()
         resp_text = get_func(self.online_url, headers=self.headers)
+        self._log(f'{self.online_url}')
         if 'not_online' in resp_text:
             self._log('###*** NOT ONLINE! ***###')
             return False
@@ -206,39 +206,42 @@ class SrunClient:
         print('=' * len(header))
 
     def login(self):
-        if not self.check_config():
-            self.generate_config()
-        if self.check_online():
-            self._log('###*** ALREADY ONLINE! ***###')
-            return True
-        if not self.username or not self.passwd:
-            self._log('###*** LOGIN FAILED! (username or passwd is None) ***###')
-            self._log('username and passwd are required! (check username and passwd)')
-            return False
-        encrypt_passwd = self._encrypt(self.passwd)
-        payload = {
-            'action': 'login',
-            'username': self.username,
-            'password': encrypt_passwd,
-            'type': 2, 'n': 117,
-            'drop': 0, 'pop': 0,
-            'mbytes': 0, 'minutes': 0,
-            'ac_id': 1
-            }
-        resp_text = post_func(self.login_url, data=payload, headers=self.headers)
-        if 'login_ok' in resp_text:
-            self._log('###*** LOGIN SUCCESS! ***###')
-            self._log(resp_text)
-            self.show_online()
-            return True
-        elif 'login_error' in resp_text:
-            self._log('###*** LOGIN FAILED! (login error)***###')
-            self._log(resp_text)
-            return False
-        else:
-            self._log('###*** LOGIN FAILED! (unknown error) ***###')
-            self._log(resp_text)
-            return False
+        curr_try = 1
+        MAX_TRY = 2
+        while curr_try <= MAX_TRY:
+            if not self.check_config():
+                self.generate_config()
+            if self.check_online():
+                self._log('###*** ALREADY ONLINE! ***###')
+                return True
+            if not self.username or not self.passwd:
+                self._log('###*** LOGIN FAILED! (username or passwd is None) ***###')
+                self._log('username and passwd are required! (check username and passwd)')
+            encrypt_passwd = self._encrypt(self.passwd)
+            payload = {
+                'action': 'login',
+                'username': self.username,
+                'password': encrypt_passwd,
+                'type': 2, 'n': 117,
+                'drop': 0, 'pop': 0,
+                'mbytes': 0, 'minutes': 0,
+                'ac_id': 1
+                }
+            resp_text = post_func(self.login_url, data=payload, headers=self.headers)
+            if 'login_ok' in resp_text:
+                self._log('###*** LOGIN SUCCESS! ***###')
+                self._log(resp_text)
+                self.show_online()
+            elif 'login_error' in resp_text:
+                self._log('###*** LOGIN FAILED! (login error)***###')
+                self._log(resp_text)
+            else:
+                self._log('###*** LOGIN FAILED! (unknown error) ***###')
+                self._log(resp_text)
+            curr_try += 1
+            self.login_url = 'https://{}/cgi-bin/srun_portal'.format(self.srun_ip)
+            self.online_url = 'https://{}/cgi-bin/rad_user_info'.format(self.srun_ip)
+            self._log('###***HTTP LOGIN FAILED! (try to login by HTTPS)***###')
 
     def logout(self):
         if not self.check_online(): return True
